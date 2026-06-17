@@ -15,20 +15,26 @@ export const DoctorDemo = () => {
         {/* Left Side Content */}
         <motion.div 
           className={styles.leftContent}
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { 
+              opacity: 1,
+              transition: { staggerChildren: 0.15, delayChildren: 0.1 }
+            }
+          }}
         >
-          <div className={styles.kicker}>Your Online Presence. Simplified.</div>
-          <h2 className={styles.heading}>
+          <motion.div className={styles.kicker} variants={{ hidden: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 } }}>Your Online Presence. Simplified.</motion.div>
+          <motion.h2 className={styles.heading} variants={{ hidden: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 } }}>
             Tailored for the <br />
             <span className="text-gradient">Doctors</span>
-          </h2>
-          <p className={styles.description}>
+          </motion.h2>
+          <motion.p className={styles.description} variants={{ hidden: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 } }}>
             A smart, one-link profile with all your clinic details—timings, contact, location, UPI, and more.
-          </p>
-          <div className={styles.buttonGroup}>
+          </motion.p>
+          <motion.div className={styles.buttonGroup} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
             <button className={styles.primaryBtn}>Know More</button>
             <button 
               className={styles.secondaryBtn} 
@@ -36,7 +42,7 @@ export const DoctorDemo = () => {
             >
               View Demo
             </button>
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Right Side Demo Container */}

@@ -26,6 +26,14 @@ export const Navbar = () => {
     { name: 'Projects', href: '#projects' },
   ];
 
+  const handleWhatsAppClick = () => {
+    const phoneNumber = "919870126712";
+    const message = "Hello! I'm interested in your services.";
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <motion.header
       className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}
@@ -51,7 +59,7 @@ export const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Button variant="primary">Get Started</Button>
+          <Button variant="primary" onClick={handleWhatsAppClick}>Get Started</Button>
         </nav>
 
         <button 
@@ -82,7 +90,7 @@ export const Navbar = () => {
             </Link>
           ))}
           <div className={styles.mobileNavAction}>
-            <Button variant="primary">Get Started</Button>
+            <Button variant="primary" onClick={() => { setMobileMenuOpen(false); handleWhatsAppClick(); }}>Get Started</Button>
           </div>
         </motion.div>
       )}

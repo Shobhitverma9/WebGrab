@@ -5,13 +5,14 @@ import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import styles from './DoctorDemo.module.css';
 
 // Generate 12 slots from 9:00 AM to 12:00 PM (15 min each)
-const generateSlots = () => {
+const generateSlots = (startHour: number, ampm: 'AM' | 'PM') => {
   const slots = [];
-  let currentHour = 9;
+  let currentHour = startHour;
   let currentMinute = 0;
 
   for (let i = 0; i < 12; i++) {
-    const timeString = `${currentHour}:${currentMinute === 0 ? '00' : currentMinute} ${currentHour >= 12 ? 'PM' : 'AM'}`;
+    const displayHour = currentHour > 12 ? currentHour - 12 : currentHour;
+    const timeString = `${displayHour}:${currentMinute === 0 ? '00' : currentMinute} ${ampm}`;
     slots.push(timeString);
     currentMinute += 15;
     if (currentMinute === 60) {
@@ -22,7 +23,8 @@ const generateSlots = () => {
   return slots;
 };
 
-const MORNING_SLOTS = generateSlots();
+const MORNING_SLOTS = generateSlots(9, 'AM'); // 9 AM to 12 PM
+const EVENING_SLOTS = generateSlots(4, 'PM'); // 4 PM to 7 PM
 
 export const MockDoctorSite = () => {
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -88,28 +90,37 @@ export const MockDoctorSite = () => {
         </div>
       </div>
 
-      {/* Profile Section */}
+      {/* Hero Profile Section */}
       <div className={styles.profileSection}>
-        <span className={styles.availableBadge}>Available Now</span>
-        {/* Placeholder image for doctor */}
-        <img 
-          src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=200&auto=format&fit=crop" 
-          alt="Dr. Anand Vihari" 
-          className={styles.avatar} 
-        />
-        <h3 className={styles.doctorName}>Dr. Anand Vihari</h3>
-        <p className={styles.qualifications}>MBBS, MS - General Surgery</p>
-        <span className={styles.specialtyBadge}>General Physician</span>
-        <p className={styles.qualifications} style={{ color: '#3b82f6', marginTop: '0.25rem' }}>8+ years Experience</p>
-        
-        <div className={styles.fullBio}>
-          <p>
-            I'm a general surgeon based at Sreshta Multi Speciality Hospital in Sangareddy, with a strong focus on minimally invasive procedures. Over the years, I've developed expertise in treating conditions like laser fistula, inguinal hernia, circumcision, and incision & drainage (I&D) — all with an emphasis on reducing recovery time and improving patient comfort. My goal has always been to provide clear, honest communication and help my patients feel informed and confident about their treatment. I believe that a calm conversation can be just as healing as any procedure. I stay updated with the latest surgical techniques through regular training and medical conferences, and I also enjoy guiding younger doctors who are just starting their careers.
-          </p>
-          <span className={styles.readMore}>Less</span>
+        <div className={styles.heroText}>
+          <span className={styles.availableBadge}>Available Now</span>
+          <h1 className={styles.doctorNameLarge}>Dr. Anand Vihari</h1>
+          <p className={styles.qualificationsLarge}>MBBS, MS - General Surgery</p>
+          <div className={styles.badgesWrapper}>
+            <span className={styles.specialtyBadge}>General Physician</span>
+            <span className={styles.experienceText}>8+ years Experience</span>
+          </div>
+          
+          <div className={styles.fullBioDesktop}>
+            <p>
+              I'm a general surgeon based at Sreshta Multi Speciality Hospital in Sangareddy, with a strong focus on minimally invasive procedures. Over the years, I've developed expertise in treating conditions like laser fistula, inguinal hernia, circumcision, and incision & drainage (I&D) — all with an emphasis on reducing recovery time and improving patient comfort. My goal has always been to provide clear, honest communication and help my patients feel informed and confident about their treatment. I believe that a calm conversation can be just as healing as any procedure.
+            </p>
+          </div>
+          
+          <div className={styles.heroActions}>
+            <button className={styles.consultBtn}>Consult Now</button>
+            <button className={styles.secondaryActionBtn}>View Timings</button>
+          </div>
         </div>
-        
-        <button className={styles.consultBtn}>Consult Now</button>
+
+        <div className={styles.heroImageWrapper}>
+          <img 
+            src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=600&auto=format&fit=crop" 
+            alt="Dr. Anand Vihari" 
+            className={styles.heroImage} 
+          />
+          <div className={styles.imageBackdrop}></div>
+        </div>
       </div>
 
       {/* Details List */}
@@ -142,24 +153,48 @@ export const MockDoctorSite = () => {
 
       {/* Booking Section */}
       <div className={styles.bookingSection}>
-        <h4 className={styles.bookingHeader}>Morning Timings</h4>
-        <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>9:00 AM - 12:00 PM</p>
-        
-        <div className={styles.slotGrid}>
-          {MORNING_SLOTS.map((slot) => {
-            const isBooked = bookedSlots.includes(slot);
-            const isSelected = selectedSlot === slot;
-            return (
-              <button
-                key={slot}
-                className={`${styles.slotBtn} ${isSelected ? styles.selected : ''}`}
-                disabled={isBooked || (isBooking && isSelected)}
-                onClick={() => handleBookSlot(slot)}
-              >
-                {slot}
-              </button>
-            );
-          })}
+        <div style={{ marginBottom: '2rem' }}>
+          <h4 className={styles.bookingHeader}>Morning Timings</h4>
+          <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>9:00 AM - 12:00 PM</p>
+          
+          <div className={styles.slotGrid}>
+            {MORNING_SLOTS.map((slot) => {
+              const isBooked = bookedSlots.includes(slot);
+              const isSelected = selectedSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  className={`${styles.slotBtn} ${isSelected ? styles.selected : ''}`}
+                  disabled={isBooked || (isBooking && isSelected)}
+                  onClick={() => handleBookSlot(slot)}
+                >
+                  {slot}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <h4 className={styles.bookingHeader}>Evening Timings</h4>
+          <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>4:00 PM - 7:00 PM</p>
+          
+          <div className={styles.slotGrid}>
+            {EVENING_SLOTS.map((slot) => {
+              const isBooked = bookedSlots.includes(slot);
+              const isSelected = selectedSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  className={`${styles.slotBtn} ${isSelected ? styles.selected : ''}`}
+                  disabled={isBooked || (isBooking && isSelected)}
+                  onClick={() => handleBookSlot(slot)}
+                >
+                  {slot}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

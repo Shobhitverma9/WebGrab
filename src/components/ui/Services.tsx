@@ -49,17 +49,23 @@ export const Services = () => {
       <div className="container">
         <div className={styles.header}>
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { 
+                opacity: 1,
+                transition: { staggerChildren: 0.15 }
+              }
+            }}
           >
-            <h2 className="heading-lg">
+            <motion.h2 className="heading-lg" variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } } }}>
               Complete <span className="text-gradient">Digital Growth</span>
-            </h2>
-            <p className="text-body" style={{ marginTop: '1rem', maxWidth: '600px', margin: '1rem auto 0' }}>
+            </motion.h2>
+            <motion.p className="text-body" style={{ marginTop: '1rem', maxWidth: '600px', margin: '1rem auto 0' }} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } } }}>
               We don't just build websites; we engineer your entire digital ecosystem. Our comprehensive services are designed to scale your business exponentially.
-            </p>
+            </motion.p>
           </motion.div>
         </div>
 

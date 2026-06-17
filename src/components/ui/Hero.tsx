@@ -3,45 +3,74 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './Button';
-import { Scene } from '../canvas/Scene';
+import { FloatingCards } from './FloatingCards';
 import styles from './Hero.module.css';
 
 export const Hero = () => {
   return (
     <section className={styles.heroSection}>
-      <div className={styles.canvasContainer}>
-        <Scene />
-      </div>
+      <FloatingCards />
       
       <div className={`container ${styles.contentContainer}`}>
         <motion.div 
           className={styles.textContent}
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { 
+              opacity: 1,
+              transition: { staggerChildren: 0.2, delayChildren: 0.1 }
+            }
+          }}
         >
           <motion.div 
             className={styles.badge}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            variants={{
+              hidden: { opacity: 0, scale: 0.8 },
+              visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 200, damping: 12 } }
+            }}
           >
             Digital Growth Agency
           </motion.div>
           
-          <h1 className="heading-xl">
+          <motion.h1 
+            className="heading-xl"
+            variants={{
+              hidden: { opacity: 0, y: 40 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+            }}
+          >
             Grab Your <br />
             <span className="text-gradient">Digital Future</span>
-          </h1>
+          </motion.h1>
           
-          <p className="text-body" style={{ maxWidth: '600px', marginTop: '1.5rem', marginBottom: '2.5rem' }}>
+          <motion.p 
+            className="text-body" style={{ maxWidth: '600px', marginTop: '1.5rem', marginBottom: '2.5rem' }}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+            }}
+          >
             We transform visionary ideas into immersive digital realities. From AI automation to stunning web experiences, we engineer growth for modern businesses.
-          </p>
+          </motion.p>
           
-          <div className={styles.ctaGroup}>
-            <Button variant="primary">Start Your Journey</Button>
+          <motion.div 
+            className={styles.ctaGroup}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+            }}
+          >
+            <Button variant="primary" onClick={() => {
+              const phoneNumber = "+919870126712";
+              const message = "Hello! I'm interested in your services.";
+              const encodedMessage = encodeURIComponent(message);
+              const whatsappUrl = `https://wa.me/${phoneNumber.replace("+", "")}?text=${encodedMessage}`;
+              window.open(whatsappUrl, "_blank");
+            }}>Start Your Journey</Button>
             <Button variant="secondary">View Our Work</Button>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
       

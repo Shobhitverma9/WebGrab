@@ -16,6 +16,7 @@ export const Scene = () => {
         
         <Suspense fallback={null}>
           <HeroModel />
+          <directionalLight position={[5, 5, 5]} intensity={1.5} castShadow />
         </Suspense>
       </Canvas>
     </div>

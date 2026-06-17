@@ -62,17 +62,23 @@ export const Projects = () => {
       <div className="container">
         <div className={styles.header}>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { 
+                opacity: 1,
+                transition: { staggerChildren: 0.15 }
+              }
+            }}
           >
-            <h2 className="heading-lg">
+            <motion.h2 className="heading-lg" variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } } }}>
               Featured <span className="text-gradient">Work</span>
-            </h2>
-            <p className="text-body" style={{ marginTop: '1rem', maxWidth: '600px' }}>
+            </motion.h2>
+            <motion.p className="text-body" style={{ marginTop: '1rem', maxWidth: '600px' }} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } } }}>
               A glimpse into the digital empires we've helped build. Premium quality, unparalleled performance.
-            </p>
+            </motion.p>
           </motion.div>
         </div>
 
