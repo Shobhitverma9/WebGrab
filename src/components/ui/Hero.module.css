@@ -1,0 +1,121 @@
+.heroSection {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 800px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.canvasContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Add a subtle radial gradient overlay to ensure text readability against 3D */
+.canvasContainer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 50%, transparent 20%, var(--background) 100%);
+  pointer-events: none;
+}
+
+.contentContainer {
+  position: relative;
+  z-index: 2;
+  pointer-events: none; /* Let clicks pass through to 3D canvas where there's no text */
+}
+
+.textContent {
+  pointer-events: auto; /* Re-enable clicks for text/buttons */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 800px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(109, 40, 217, 0.15);
+  border: 1px solid rgba(109, 40, 217, 0.3);
+  border-radius: 999px;
+  color: #a78bfa;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ctaGroup {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.scrollIndicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mouse {
+  width: 24px;
+  height: 36px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.wheel {
+  width: 4px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.scrollText {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    align-items: flex-end;
+    padding-bottom: 8rem;
+  }
+  
+  .canvasContainer::after {
+    background: linear-gradient(to top, var(--background) 10%, transparent 60%);
+  }
+  
+  .textContent {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .ctaGroup {
+    justify-content: center;
+  }
+}

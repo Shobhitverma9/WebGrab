@@ -1,0 +1,109 @@
+.widgetContainer {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.tooltip {
+  background-color: white;
+  color: #1e293b;
+  font-size: 0.875rem;
+  padding: 0.625rem 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
+  font-weight: 500;
+  position: relative;
+}
+
+.tooltipContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pingDotContainer {
+  position: relative;
+  display: flex;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+.pingDot {
+  position: absolute;
+  display: inline-flex;
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  background-color: #4ade80;
+  opacity: 0.75;
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.solidDot {
+  position: relative;
+  display: inline-flex;
+  border-radius: 50%;
+  height: 0.5rem;
+  width: 0.5rem;
+  background-color: #22c55e;
+}
+
+.tooltipTail {
+  position: absolute;
+  bottom: -0.5rem;
+  right: 1.5rem;
+  width: 1rem;
+  height: 1rem;
+  background-color: white;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+  transform: rotate(45deg);
+}
+
+.mainButton {
+  background: linear-gradient(to top right, #1EBE57, #25D366);
+  color: white;
+  padding: 1rem;
+  border-radius: 50%;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+}
+
+.mainButton:hover {
+  box-shadow: 0 8px 30px rgba(37, 211, 102, 0.6);
+}
+
+.shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  opacity: 0.2;
+}
+
+.icon {
+  position: relative;
+  z-index: 10;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}

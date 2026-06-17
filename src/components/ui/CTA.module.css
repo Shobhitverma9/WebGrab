@@ -1,0 +1,49 @@
+.ctaSection {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 4rem; /* Less padding since footer is next */
+}
+
+.ctaContainer {
+  position: relative;
+}
+
+.ctaBox {
+  position: relative;
+  padding: 6rem 2rem;
+  border-radius: 32px;
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.glowBg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(109, 40, 217, 0.2) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ctaBox h2, .ctaBox p, .actionGroup {
+  position: relative;
+  z-index: 2;
+}
+
+.actionGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .ctaBox {
+    padding: 4rem 1.5rem;
+  }
+}
