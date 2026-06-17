@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "WebGrab | Premier Digital Growth Agency",
   description: "WebGrab is a modern design and digital growth agency specializing in immersive web development, AI business automation, and comprehensive digital marketing strategies.",
   icons: {
-    icon: "/webgrabfavicon1.jpeg",
+    icon: "/favicon2.png",
   },
 };
 
