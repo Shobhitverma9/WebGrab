@@ -69,7 +69,9 @@ export const Hero = () => {
               const whatsappUrl = `https://wa.me/${phoneNumber.replace("+", "")}?text=${encodedMessage}`;
               window.open(whatsappUrl, "_blank");
             }}>Start Your Journey</Button>
-            <Button variant="secondary">View Our Work</Button>
+            <Button variant="secondary" onClick={() => {
+              document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+            }}>View Our Work</Button>
           </motion.div>
         </motion.div>
       </div>

@@ -30,6 +30,8 @@ export const MockDoctorSite = () => {
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', age: '' });
 
   useEffect(() => {
     fetchBookedSlots();
@@ -47,33 +49,33 @@ export const MockDoctorSite = () => {
     }
   };
 
-  const handleBookSlot = async (slot: string) => {
+  const handleBookSlot = (slot: string) => {
     if (bookedSlots.includes(slot)) return;
-    
-    setIsBooking(true);
     setSelectedSlot(slot);
+    setIsModalOpen(true);
+  };
 
-    try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slotTime: slot }),
-      });
+  const handleModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSlot) return;
 
-      if (res.ok) {
-        const data = await res.json();
-        setBookedSlots(data.bookedSlots);
-        alert(`Successfully booked slot at ${slot}`);
-        setSelectedSlot(null);
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to book slot');
-      }
-    } catch (error) {
-      alert('Network error while booking slot');
-    } finally {
-      setIsBooking(false);
-    }
+    const message = `Hello Dr. Anand, I would like to book a consultation.\n\n*Details:*\nName: ${formData.name}\nAge: ${formData.age}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nRequested Slot: ${selectedSlot}`;
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = "+919870126712";
+    const whatsappUrl = `https://wa.me/${phoneNumber.replace("+", "")}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, "_blank");
+    
+    // Optimistically mark as booked for demo purposes
+    setBookedSlots(prev => [...prev, selectedSlot]);
+    setIsModalOpen(false);
+    setFormData({ name: '', phone: '', email: '', age: '' });
+    setSelectedSlot(null);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedSlot(null);
   };
 
   return (
@@ -83,11 +85,11 @@ export const MockDoctorSite = () => {
         <div className={styles.mockLogo}>
           <span style={{color: '#3b82f6'}}>Dr.</span> Anand
         </div>
-        <div className={styles.mockMenuIcon}>
-          <div className={styles.hamburger}></div>
-          <div className={styles.hamburger}></div>
-          <div className={styles.hamburger}></div>
-        </div>
+        <button className={styles.navBookBtn} onClick={() => {
+           document.getElementById('bookingSection')?.scrollIntoView({behavior: 'smooth'});
+         }}>
+          Book Appointment
+        </button>
       </div>
 
       {/* Hero Profile Section */}
@@ -97,19 +99,21 @@ export const MockDoctorSite = () => {
           <h1 className={styles.doctorNameLarge}>Dr. Anand Vihari</h1>
           <p className={styles.qualificationsLarge}>MBBS, MS - General Surgery</p>
           <div className={styles.badgesWrapper}>
-            <span className={styles.specialtyBadge}>General Physician</span>
-            <span className={styles.experienceText}>8+ years Experience</span>
+            <div className={styles.specialtyBadge}>Proctology Specialist</div>
+            <div className={styles.specialtyBadge}>Laparoscopic Surgeon</div>
           </div>
-          
           <div className={styles.fullBioDesktop}>
             <p>
               I'm a general surgeon based at Sreshta Multi Speciality Hospital in Sangareddy, with a strong focus on minimally invasive procedures. Over the years, I've developed expertise in treating conditions like laser fistula, inguinal hernia, circumcision, and incision & drainage (I&D) — all with an emphasis on reducing recovery time and improving patient comfort. My goal has always been to provide clear, honest communication and help my patients feel informed and confident about their treatment. I believe that a calm conversation can be just as healing as any procedure.
             </p>
           </div>
-          
           <div className={styles.heroActions}>
-            <button className={styles.consultBtn}>Consult Now</button>
-            <button className={styles.secondaryActionBtn}>View Timings</button>
+            <button className={styles.consultBtn} onClick={() => {
+             document.getElementById('bookingSection')?.scrollIntoView({behavior: 'smooth'});
+           }}>Book Appointment</button>
+            <button className={styles.secondaryActionBtn} onClick={() => {
+             document.getElementById('bookingSection')?.scrollIntoView({behavior: 'smooth'});
+           }}>View Timings</button>
           </div>
         </div>
 
@@ -149,10 +153,48 @@ export const MockDoctorSite = () => {
           <h4>10k+</h4>
           <p>Happy Patients</p>
         </div>
+        <div className={styles.statItem}>
+          <h4>50+</h4>
+          <p>Advanced Procedures</p>
+        </div>
+        <div className={styles.statItem}>
+          <h4>4.9/5</h4>
+          <p>Patient Rating</p>
+        </div>
+      </div>
+
+      {/* Affiliated Hospitals (Visual Trust Signals) */}
+      <div className={styles.affiliationsSection}>
+        <p className={styles.trustText}>TRUSTED BY & AFFILIATED WITH</p>
+        <div className={styles.logoGrid}>
+          <div className={styles.hospitalLogoCard}>
+             <div className={styles.hospitalLogoPlaceholder}>🏥</div>
+             <p>Max Super Speciality</p>
+          </div>
+          <div className={styles.hospitalLogoCard}>
+             <div className={styles.hospitalLogoPlaceholder}>🏥</div>
+             <p>Apollo Hospitals</p>
+          </div>
+          <div className={styles.hospitalLogoCard}>
+             <div className={styles.hospitalLogoPlaceholder}>🏥</div>
+             <p>Sreshta Hospital</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Credentials Section */}
+      <div className={styles.credentialsSection}>
+        <h4 className={styles.sectionTitle}>Credentials & Memberships</h4>
+        <ul className={styles.credentialsList}>
+          <li><span className={styles.checkIcon}>✓</span> <strong>Board Certified</strong> in General Surgery</li>
+          <li><span className={styles.checkIcon}>✓</span> <strong>Fellowship</strong> in Minimal Access Surgery (FMAS)</li>
+          <li><span className={styles.checkIcon}>✓</span> <strong>Member</strong> of Association of Surgeons of India (ASI)</li>
+          <li><span className={styles.checkIcon}>✓</span> <strong>Member</strong> of Indian Medical Association (IMA)</li>
+        </ul>
       </div>
 
       {/* Booking Section */}
-      <div className={styles.bookingSection}>
+      <div id="bookingSection" className={styles.bookingSection}>
         <div style={{ marginBottom: '2rem' }}>
           <h4 className={styles.bookingHeader}>Morning Timings</h4>
           <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>9:00 AM - 12:00 PM</p>
@@ -198,19 +240,74 @@ export const MockDoctorSite = () => {
         </div>
       </div>
 
+      {/* Clinic Gallery (Authentic Visuals) */}
+      <div className={styles.gallerySection}>
+        <h4 className={styles.sectionTitle}>Clinic Tour</h4>
+        <p className={styles.galleryDescription}>Take a look inside our modern, patient-friendly facility.</p>
+        <div className={styles.galleryGrid}>
+          <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400&auto=format&fit=crop" alt="Clinic Reception" className={styles.galleryImage} />
+          <img src="https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?q=80&w=400&auto=format&fit=crop" alt="Consultation Room" className={styles.galleryImage} />
+          <img src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=400&auto=format&fit=crop" alt="Waiting Area" className={styles.galleryImage} />
+          <img src="https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=400&auto=format&fit=crop" alt="Treatment Room" className={styles.galleryImage} />
+        </div>
+      </div>
+
+      {/* Patient Resources Section */}
+      <div className={styles.resourcesSection}>
+        <h4 className={styles.sectionTitle}>Before Your Visit</h4>
+        <div className={styles.resourcesGrid}>
+          <div className={styles.resourceCard}>
+            <div className={styles.resourceIcon}>📋</div>
+            <h5>What to Bring</h5>
+            <ul className={styles.resourceList}>
+              <li>Valid Government ID</li>
+              <li>Health Insurance Card</li>
+              <li>Previous medical reports or scans</li>
+              <li>List of current medications</li>
+            </ul>
+          </div>
+          <div className={styles.resourceCard}>
+            <div className={styles.resourceIcon}>⚠️</div>
+            <h5>Pre-Visit Instructions</h5>
+            <ul className={styles.resourceList}>
+              <li>Arrive 15 minutes early for registration</li>
+              <li>Wear comfortable, loose clothing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Testimonials Section */}
       <div className={styles.testimonialsSection}>
         <h4 className={styles.sectionTitle}>Patient Stories</h4>
         <div className={styles.cardGrid}>
           <div className={styles.testimonialCard}>
-            <div className={styles.videoThumbnail}>
-               <div className={styles.playIcon}>▶</div>
+            <div className={styles.videoThumbnail} style={{ padding: 0, overflow: 'hidden' }}>
+               <iframe 
+                 width="100%" 
+                 height="100%" 
+                 src="https://www.youtube.com/embed/nbIqDBp00sU?controls=0" 
+                 title="Patient Story 1" 
+                 frameBorder="0" 
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                 allowFullScreen
+                 style={{ border: 'none' }}
+               ></iframe>
             </div>
             <p className={styles.testimonialTitle}>Complete Recovery after Spinal Fusion Surgery</p>
           </div>
           <div className={styles.testimonialCard}>
-            <div className={styles.videoThumbnail} style={{background: '#e2e8f0'}}>
-               <div className={styles.playIcon}>▶</div>
+            <div className={styles.videoThumbnail} style={{ padding: 0, overflow: 'hidden' }}>
+               <iframe 
+                 width="100%" 
+                 height="100%" 
+                 src="https://www.youtube.com/embed/xSGISdAyKfE?controls=0" 
+                 title="Patient Story 2" 
+                 frameBorder="0" 
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                 allowFullScreen
+                 style={{ border: 'none' }}
+               ></iframe>
             </div>
             <p className={styles.testimonialTitle}>Slip Disc & Sciatica Relief</p>
           </div>
@@ -238,15 +335,31 @@ export const MockDoctorSite = () => {
       <div className={styles.associationsSection}>
         <h4 className={styles.sectionTitle}>Associations & Locations</h4>
         <div className={styles.cardGrid}>
-          <div className={styles.locationCard} style={{background: '#f97316'}}>
-             <h5>Dr. Anand Vihari Clinic</h5>
-             <p>Advanced Surgeon Clinic</p>
-             <div className={styles.mapBg}></div>
-          </div>
-          <div className={styles.locationCard} style={{background: '#64748b'}}>
-             <h5>Max Super Speciality Hospital</h5>
-             <p>Sector 128, Noida</p>
-          </div>
+          <a 
+            href="https://www.google.com/maps/dir/?api=1&destination=Sreshta+Multi+Speciality+Hospital,+Ashok+Nagar,+Sangareddy" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{textDecoration: 'none'}}
+          >
+            <div className={styles.locationCard} style={{background: '#f97316'}}>
+               <h5>Dr. Anand Vihari Clinic</h5>
+               <p>Advanced Surgeon Clinic</p>
+               <p style={{fontSize: '0.75rem', marginTop: '0.5rem', fontWeight: 600}}>📍 Click for Directions</p>
+               <div className={styles.mapBg}></div>
+            </div>
+          </a>
+          <a 
+            href="https://www.google.com/maps/dir/?api=1&destination=Max+Super+Speciality+Hospital,+Sector+128,+Noida" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{textDecoration: 'none'}}
+          >
+            <div className={styles.locationCard} style={{background: '#64748b'}}>
+               <h5>Max Super Speciality Hospital</h5>
+               <p>Sector 128, Noida</p>
+               <p style={{fontSize: '0.75rem', marginTop: '0.5rem', fontWeight: 600}}>📍 Click for Directions</p>
+            </div>
+          </a>
         </div>
       </div>
 
@@ -257,6 +370,74 @@ export const MockDoctorSite = () => {
       >
         <MessageCircle size={24} />
       </div>
+
+      {/* Booking Modal */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h3>Book Slot: {selectedSlot}</h3>
+              <button className={styles.closeModalBtn} onClick={handleModalClose}>&times;</button>
+            </div>
+            <form onSubmit={handleModalSubmit} className={styles.modalForm}>
+              <div className={styles.formGroup}>
+                <label>Full Name</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.name} 
+                  onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Age</label>
+                  <input 
+                    type="number" 
+                    required 
+                    value={formData.age} 
+                    onChange={(e) => setFormData({...formData, age: e.target.value})} 
+                    placeholder="Years"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Phone Number</label>
+                  <input 
+                    type="tel" 
+                    required 
+                    value={formData.phone} 
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                    placeholder="10-digit number"
+                  />
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Email Address</label>
+                <input 
+                  type="email" 
+                  required 
+                  value={formData.email} 
+                  onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                  placeholder="your@email.com"
+                />
+              </div>
+              <button type="submit" className={styles.submitModalBtn}>
+                Confirm & Book via WhatsApp
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Sticky Mobile CTA */}
+      <div className={styles.stickyCTA}>
+         <button className={styles.stickyBookBtn} onClick={() => {
+           document.getElementById('bookingSection')?.scrollIntoView({behavior: 'smooth'});
+         }}>
+           Book Appointment
+         </button>
+      </div>
+
     </div>
   );
 };

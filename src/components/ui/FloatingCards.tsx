@@ -39,9 +39,9 @@ export const FloatingCards = () => {
          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
        >
          <div className={styles.cardHeader}>
-           <div className={styles.avatar1}></div>
+           <img src="/ISKCONGzb.png" alt="ISKCON Ghaziabad logo" className={styles.avatarImage} />
            <div className={styles.userInfo}>
-             <span className={styles.name}>DesignCo</span>
+             <span className={styles.name}>ISKCON Ghaziabad</span>
              <span className={styles.time}>2h</span>
            </div>
          </div>
@@ -59,9 +59,9 @@ export const FloatingCards = () => {
          transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
        >
          <div className={styles.cardHeader}>
-           <div className={styles.avatar2}></div>
+           <img src="/Vedictravel.png" alt="Vedic Travel logo" className={styles.avatarImage} />
            <div className={styles.userInfo}>
-             <span className={styles.name}>TechInnovate</span>
+             <span className={styles.name}>Vedic Travel</span>
              <span className={styles.time}>4h</span>
            </div>
          </div>
@@ -79,9 +79,9 @@ export const FloatingCards = () => {
          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
        >
          <div className={styles.cardHeader}>
-           <div className={styles.avatar3}></div>
+           <img src="/shopghumakkad.png" alt="Shop Ghumakkad logo" className={styles.avatarImage} />
            <div className={styles.userInfo}>
-             <span className={styles.name}>GlobalReach</span>
+             <span className={styles.name}>Shop Ghumakkad</span>
              <span className={styles.time}>5h</span>
            </div>
          </div>

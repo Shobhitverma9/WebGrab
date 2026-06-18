@@ -128,16 +128,14 @@
   margin-bottom: 14px;
 }
 
-.avatar1, .avatar2, .avatar3 {
-  width: 38px;
-  height: 38px;
+.avatarImage {
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: #eee;
+  object-fit: cover;
+  background-color: #fff;
+  border: 1px solid #eee;
 }
-
-.avatar1 { background: linear-gradient(135deg, #ffd166, #ffb703); }
-.avatar2 { background: linear-gradient(135deg, #ef476f, #d90429); }
-.avatar3 { background: linear-gradient(135deg, #118ab2, #073b4c); }
 
 .userInfo {
   display: flex;
