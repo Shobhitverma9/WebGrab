@@ -7,7 +7,7 @@ import styles from "./WhatsAppWidget.module.css";
 
 export const WhatsAppWidget = () => {
   const pathname = usePathname();
-  const phoneNumber = "+919870126712";
+  const phoneNumber = "+917011147999";
   const message = "Hello! I'm interested in your services.";
   const [isHovered, setIsHovered] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -93,7 +93,7 @@ export const WhatsAppWidget = () => {
           }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
         />
-        
+
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="34"
