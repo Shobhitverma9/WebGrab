@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import styles from './DoctorDemo.module.css';
 
 // Generate 12 slots from 9:00 AM to 12:00 PM (15 min each)
@@ -29,48 +30,204 @@ const EVENING_SLOTS = generateSlots(4, 'PM'); // 4 PM to 7 PM
 export const MockDoctorSite = () => {
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  // Calendar state
+  const today = new Date();
+  const getTodayString = () => today.toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [closedDates, setClosedDates] = useState<string[]>([]);
+  const [closedDaysOfWeek, setClosedDaysOfWeek] = useState<number[]>([]);
+  const [isDateClosed, setIsDateClosed] = useState(false);
+
   const [isBooking, setIsBooking] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', phone: '', email: '', age: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', age: '', problem: '' });
+
+  const [isReturning, setIsReturning] = useState(false);
+  const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+  const [patientFound, setPatientFound] = useState(false);
+  const [phoneLookupError, setPhoneLookupError] = useState('');
+
+  // Calendar helper functions
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+  const toDateStr = (year: number, month: number, day: number) => {
+    const mm = String(month + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    return `${year}-${mm}-${dd}`;
+  };
+
+  const isPast = (year: number, month: number, day: number) => {
+    return new Date(year, month, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  };
+
+  const isSlotPassed = (slot: string) => {
+    if (selectedDate !== getTodayString()) return false;
+    
+    const [time, period] = slot.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+
+    if (hours < currentHours) return true;
+    if (hours === currentHours && minutes < currentMinutes) return true;
+
+    return false;
+  };
+
+  const isClosedDate = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return closedDates.includes(dateStr) || closedDaysOfWeek.includes(d.getDay());
+  };
+
+  const prevMonth = () => {
+    if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); }
+    else setCalMonth(calMonth - 1);
+  };
+
+  const nextMonth = () => {
+    if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); }
+    else setCalMonth(calMonth + 1);
+  };
 
   useEffect(() => {
-    fetchBookedSlots();
+    fetchSettings();
   }, []);
 
-  const fetchBookedSlots = async () => {
+  useEffect(() => {
+    if (selectedDate) {
+      checkIfDateIsClosed(selectedDate);
+      fetchBookedSlots(selectedDate);
+    }
+  }, [selectedDate, closedDates, closedDaysOfWeek]);
+
+  const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/bookings');
+      const res = await fetch('/api/settings');
       if (res.ok) {
-        const data = await res.json();
-        setBookedSlots(data.bookedSlots || []);
+        const json = await res.json();
+        if (json.data) {
+          setClosedDates(json.data.closedDates || []);
+          setClosedDaysOfWeek(json.data.closedDaysOfWeek || []);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch settings', error);
+    }
+  };
+
+  const checkIfDateIsClosed = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    if (closedDates.includes(dateStr) || closedDaysOfWeek.includes(day)) {
+      setIsDateClosed(true);
+    } else {
+      setIsDateClosed(false);
+    }
+  };
+
+  const fetchBookedSlots = async (date: string) => {
+    try {
+      const res = await fetch(`/api/appointments?date=${date}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          const booked = json.data.map((app: any) => app.timeSlot);
+          setBookedSlots(booked);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch slots', error);
     }
   };
 
+  const handlePhoneLookup = async (phone: string) => {
+    if (phone.length < 10) {
+      setPatientFound(false);
+      setPhoneLookupError('');
+      return;
+    }
+    
+    setIsVerifyingPhone(true);
+    setPhoneLookupError('');
+    
+    try {
+      const res = await fetch(`/api/patients?phone=${phone}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          setFormData(prev => ({
+            ...prev,
+            name: json.data.name,
+            email: json.data.email,
+            age: json.data.age
+          }));
+          setPatientFound(true);
+        }
+      } else {
+        setPatientFound(false);
+        setPhoneLookupError('No previous records found. Please book as a New Patient.');
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsVerifyingPhone(false);
+    }
+  };
+
   const handleBookSlot = (slot: string) => {
+    if (isDateClosed) return toast.error("This date is not available for booking.");
     if (bookedSlots.includes(slot)) return;
     setSelectedSlot(slot);
     setIsModalOpen(true);
   };
 
-  const handleModalSubmit = (e: React.FormEvent) => {
+  const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSlot) return;
+    if (!selectedSlot || !selectedDate) return;
+    setIsBooking(true);
 
-    const message = `Hello Dr. Anand, I would like to book a consultation.\n\n*Details:*\nName: ${formData.name}\nAge: ${formData.age}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nRequested Slot: ${selectedSlot}`;
-    const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = "+919870126712";
-    const whatsappUrl = `https://wa.me/${phoneNumber.replace("+", "")}?text=${encodedMessage}`;
-    
-    window.open(whatsappUrl, "_blank");
-    
-    // Optimistically mark as booked for demo purposes
-    setBookedSlots(prev => [...prev, selectedSlot]);
-    setIsModalOpen(false);
-    setFormData({ name: '', phone: '', email: '', age: '' });
-    setSelectedSlot(null);
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          age: formData.age,
+          problem: formData.problem,
+          date: selectedDate,
+          timeSlot: selectedSlot,
+        })
+      });
+
+      if (res.ok) {
+        toast.success("Appointment booked successfully!");
+        setBookedSlots(prev => [...prev, selectedSlot]);
+        setIsModalOpen(false);
+        setFormData({ name: '', phone: '', email: '', age: '', problem: '' });
+        setSelectedSlot(null);
+      } else {
+        toast.error("Failed to book appointment. Please try again.");
+      }
+    } catch (error) {
+      console.error("Booking error:", error);
+      toast.error("Error booking appointment.");
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   const handleModalClose = () => {
@@ -80,6 +237,7 @@ export const MockDoctorSite = () => {
 
   return (
     <div className={styles.mockSite}>
+      <Toaster position="top-center" reverseOrder={false} />
       {/* Navbar Section */}
       <div className={styles.mockNavbar}>
         <div className={styles.mockLogo}>
@@ -195,13 +353,90 @@ export const MockDoctorSite = () => {
 
       {/* Booking Section */}
       <div id="bookingSection" className={styles.bookingSection}>
+
+        {/* Visual Calendar */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h4 className={styles.bookingHeader}>Select a Date</h4>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            padding: '1rem',
+            maxWidth: '340px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+          }}>
+            {/* Month Navigation */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <button onClick={prevMonth} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1rem' }}>‹</button>
+              <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '1rem' }}>{MONTH_NAMES[calMonth]} {calYear}</span>
+              <button onClick={nextMonth} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1rem' }}>›</button>
+            </div>
+            {/* Day Names */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '0.5rem' }}>
+              {DAY_NAMES.map(d => (
+                <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', padding: '0.25rem 0' }}>{d}</div>
+              ))}
+            </div>
+            {/* Calendar Days */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+              {/* Empty cells for first-day offset */}
+              {Array.from({ length: getFirstDayOfMonth(calYear, calMonth) }).map((_, i) => (
+                <div key={`empty-${i}`} />
+              ))}
+              {Array.from({ length: getDaysInMonth(calYear, calMonth) }).map((_, i) => {
+                const day = i + 1;
+                const dateStr = toDateStr(calYear, calMonth, day);
+                const past = isPast(calYear, calMonth, day);
+                const closed = isClosedDate(dateStr);
+                const isSelected = selectedDate === dateStr;
+                const isToday = dateStr === getTodayString();
+                const disabled = past || closed;
+
+                return (
+                  <button
+                    key={day}
+                    disabled={disabled}
+                    onClick={() => { setSelectedDate(dateStr); setIsDateClosed(closed); }}
+                    style={{
+                      padding: '0.4rem 0',
+                      borderRadius: '6px',
+                      border: isToday && !isSelected ? '2px solid #3b82f6' : 'none',
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                      fontSize: '0.875rem',
+                      fontWeight: isSelected ? 700 : 400,
+                      backgroundColor: isSelected ? '#3b82f6' : closed ? '#fee2e2' : 'transparent',
+                      color: isSelected ? 'white' : disabled ? '#cbd5e1' : '#0f172a',
+                      textDecoration: closed && !past ? 'line-through' : 'none',
+                    }}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Legend */}
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', fontSize: '0.7rem', color: '#64748b' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} /> Selected
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: '#fee2e2', display: 'inline-block' }} /> Unavailable
+              </span>
+            </div>
+          </div>
+          {isDateClosed && (
+            <p style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>⛔ This date is unavailable. Please select another date.</p>
+          )}
+        </div>
+
         <div style={{ marginBottom: '2rem' }}>
           <h4 className={styles.bookingHeader}>Morning Timings</h4>
           <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>9:00 AM - 12:00 PM</p>
           
           <div className={styles.slotGrid}>
             {MORNING_SLOTS.map((slot) => {
-              const isBooked = bookedSlots.includes(slot);
+              const past = isSlotPassed(slot);
+              const isBooked = bookedSlots.includes(slot) || past;
               const isSelected = selectedSlot === slot;
               return (
                 <button
@@ -209,6 +444,7 @@ export const MockDoctorSite = () => {
                   className={`${styles.slotBtn} ${isSelected ? styles.selected : ''}`}
                   disabled={isBooked || (isBooking && isSelected)}
                   onClick={() => handleBookSlot(slot)}
+                  style={{ opacity: past ? 0.5 : 1 }}
                 >
                   {slot}
                 </button>
@@ -223,7 +459,8 @@ export const MockDoctorSite = () => {
           
           <div className={styles.slotGrid}>
             {EVENING_SLOTS.map((slot) => {
-              const isBooked = bookedSlots.includes(slot);
+              const past = isSlotPassed(slot);
+              const isBooked = bookedSlots.includes(slot) || past;
               const isSelected = selectedSlot === slot;
               return (
                 <button
@@ -231,6 +468,7 @@ export const MockDoctorSite = () => {
                   className={`${styles.slotBtn} ${isSelected ? styles.selected : ''}`}
                   disabled={isBooked || (isBooking && isSelected)}
                   onClick={() => handleBookSlot(slot)}
+                  style={{ opacity: past ? 0.5 : 1 }}
                 >
                   {slot}
                 </button>
@@ -366,7 +604,7 @@ export const MockDoctorSite = () => {
       {/* WhatsApp Widget */}
       <div 
         className={styles.whatsappWidget} 
-        onClick={() => alert("WhatsApp widget clicked!")}
+        onClick={() => toast("WhatsApp widget clicked!", { icon: '💬' })}
       >
         <MessageCircle size={24} />
       </div>
@@ -380,50 +618,118 @@ export const MockDoctorSite = () => {
               <button className={styles.closeModalBtn} onClick={handleModalClose}>&times;</button>
             </div>
             <form onSubmit={handleModalSubmit} className={styles.modalForm}>
-              <div className={styles.formGroup}>
-                <label>Full Name</label>
-                <input 
-                  type="text" 
-                  required 
-                  value={formData.name} 
-                  onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                  placeholder="Enter your name"
-                />
+              <div className={styles.patientTypeToggle}>
+                <button 
+                  type="button" 
+                  onClick={() => { setIsReturning(false); setPatientFound(false); setPhoneLookupError(''); }} 
+                  className={`${styles.toggleBtn} ${!isReturning ? styles.active : ''}`}
+                >
+                  New Patient
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsReturning(true)} 
+                  className={`${styles.toggleBtn} ${isReturning ? styles.active : ''}`}
+                >
+                  Returning Patient
+                </button>
               </div>
-              <div className={styles.formRow}>
+
+              {isReturning && (
                 <div className={styles.formGroup}>
-                  <label>Age</label>
-                  <input 
-                    type="number" 
-                    required 
-                    value={formData.age} 
-                    onChange={(e) => setFormData({...formData, age: e.target.value})} 
-                    placeholder="Years"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Phone Number</label>
+                  <label>Registered Phone Number</label>
                   <input 
                     type="tel" 
                     required 
                     value={formData.phone} 
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-                    placeholder="10-digit number"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({...formData, phone: val});
+                      if (val.length >= 10) handlePhoneLookup(val);
+                      else { setPatientFound(false); setPhoneLookupError(''); }
+                    }} 
+                    placeholder="Enter 10-digit number"
                   />
+                  {isVerifyingPhone && <span style={{fontSize: '0.8rem', color: '#64748b', marginTop: '4px'}}>Looking up your details...</span>}
+                  {phoneLookupError && <span style={{fontSize: '0.8rem', color: '#ef4444', marginTop: '4px'}}>{phoneLookupError}</span>}
                 </div>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Email Address</label>
-                <input 
-                  type="email" 
-                  required 
-                  value={formData.email} 
-                  onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                  placeholder="your@email.com"
-                />
-              </div>
-              <button type="submit" className={styles.submitModalBtn}>
-                Confirm & Book via WhatsApp
+              )}
+
+              {isReturning && patientFound && (
+                <div className={styles.welcomeMessage}>
+                  <span>✓</span> Welcome back, {formData.name}! Your details have been auto-filled.
+                </div>
+              )}
+
+              {(!isReturning || (isReturning && patientFound)) && (
+                <>
+                  {!isReturning && (
+                    <div className={styles.formGroup}>
+                      <label>Full Name</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={formData.name} 
+                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                        placeholder="Enter your name"
+                      />
+                    </div>
+                  )}
+                  
+                  {!isReturning && (
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup}>
+                        <label>Age</label>
+                        <input 
+                          type="number" 
+                          required 
+                          value={formData.age} 
+                          onChange={(e) => setFormData({...formData, age: e.target.value})} 
+                          placeholder="Years"
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>Phone Number</label>
+                        <input 
+                          type="tel" 
+                          required 
+                          value={formData.phone} 
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                          placeholder="10-digit number"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {!isReturning && (
+                    <div className={styles.formGroup}>
+                      <label>Email Address</label>
+                      <input 
+                        type="email" 
+                        required 
+                        value={formData.email} 
+                        onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                        placeholder="your@email.com"
+                      />
+                    </div>
+                  )}
+
+                  <div className={styles.formGroup}>
+                    <label>Patient Problem / Reason for Visit</label>
+                    <textarea 
+                      required 
+                      value={formData.problem} 
+                      onChange={(e) => setFormData({...formData, problem: e.target.value})} 
+                      placeholder="Briefly describe your symptoms or reason for visit"
+                      rows={3}
+                      style={{ width: '100%', padding: '0.75rem 1rem', border: '1px solid #cbd5e1', borderRadius: '8px', resize: 'vertical' }}
+                    />
+                  </div>
+                </>
+              )}
+
+              <button type="submit" className={styles.submitModalBtn} disabled={isBooking || (isReturning && !patientFound)}>
+                {isBooking ? 'Booking...' : 'Confirm Appointment'}
               </button>
             </form>
           </div>

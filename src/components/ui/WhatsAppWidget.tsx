@@ -8,7 +8,7 @@ import styles from "./WhatsAppWidget.module.css";
 export const WhatsAppWidget = () => {
   const pathname = usePathname();
   const phoneNumber = "+917011147999";
-  const message = "Hello! I'm interested in your services.";
+  const message = "Buddy, Hello! I'm interested in your services.";
   const [isHovered, setIsHovered] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -30,7 +30,7 @@ export const WhatsAppWidget = () => {
   }, []);
 
   // Hide the widget on specific pages
-  if (pathname === "/demo/doctor") {
+  if (pathname?.includes("/portal")) {
     return null;
   }
 

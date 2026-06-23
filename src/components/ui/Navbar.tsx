@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from './Button';
 import styles from './Navbar.module.css';
@@ -11,6 +12,8 @@ import { Menu, X } from 'lucide-react';
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isPortal = pathname?.includes('/portal');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +22,10 @@ export const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (isPortal) {
+    return null;
+  }
 
   const navLinks = [
     { name: 'Services', href: '#services' },
@@ -41,13 +48,13 @@ export const Navbar = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
-      <div className={`container ${styles.navContainer}`}>
+      <div className={`${isPortal ? styles.portalNavContainer : 'container'} ${styles.navContainer}`}>
         <Link href="/" className={styles.logo}>
           <Image
             src="/webgrablogo.png"
             alt="WebGrab Logo"
-            width={105}
-            height={70}
+            width={135}
+            height={90}
             className={styles.logoImage}
             priority
           />
@@ -59,7 +66,7 @@ export const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Button variant="primary" onClick={handleWhatsAppClick}>Get Started</Button>
+          {!isPortal && <Button variant="primary" onClick={handleWhatsAppClick}>Get Started</Button>}
         </nav>
 
         <button 
@@ -89,9 +96,11 @@ export const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <div className={styles.mobileNavAction}>
-            <Button variant="primary" onClick={() => { setMobileMenuOpen(false); handleWhatsAppClick(); }}>Get Started</Button>
-          </div>
+          {!isPortal && (
+            <div className={styles.mobileNavAction}>
+              <Button variant="primary" onClick={() => { setMobileMenuOpen(false); handleWhatsAppClick(); }}>Get Started</Button>
+            </div>
+          )}
         </motion.div>
       )}
     </motion.header>
